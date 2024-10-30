@@ -1,4 +1,4 @@
-# 선언형 컴포넌트로 관심사를 분리하여 컴포넌트 복잡도 개선하기
+# 선언적으로 작성한 컴포넌트로 관심사를 분리하여 컴포넌트 복잡도 개선하기
 
 ## 💭 글을 시작하며
 
@@ -18,13 +18,13 @@
 
 사용자가 서비스를 이용할 때는 개발자가 의도한 시점에 의도한 동작만을 하지 않기 때문에, 다양한 케이스에 대해 고려해야 한다. 요구사항이 중간에 변경되어 다른 UI를 그려야할 수도 있다.
 
-비동기 에러를 처리하는 방법에 대해 소개하고, 선언형으로 처리하면서 상태에 대한 관심사를 분리한 경험을 소개하려고 한다.
+비동기 에러를 처리하는 방법에 대해 소개하고, 선언형으로 처리하면서 상태에 대한 관심사를 분리한 경험을 소개하려고 한다.`
 
 ## 📘 명령형으로 처리하기
 
 에러를 명령형으로 처리하는 방법에 대해 먼저 알아보자.
 
-비동기 호출에 대한 에러를 다룰 때 일반적으로 `try-catch` 문을 사용한다.
+자바스크립트에서 비동기 호출에 대한 에러를 다룰 때 `try-catch` 문을 사용한다.
 
 ```tsx
 const getUser = () => {
@@ -43,7 +43,7 @@ const getUser = () => {
 
 함수 컴포넌트에서 비동기 에러를 핸들링하려면 useState와 useEffect를 활용해야 한다.
 
-따라서 API 호출부에선 사용처로 에러 처리를 위임하고, 나아가 UI로부터 로직을 분리해 커스텀 훅으로 분리한다면 아래와 같이 구현할 수 있다.
+따라서 <mark>API 호출부에선 사용처로 에러 처리를 위임</mark>하고, 나아가 <mark>UI로부터 로직을 커스텀 훅으로 분리</mark>한다면 아래와 같이 구현할 수 있다.
 
 ```tsx
 const getUser = async (id: number) => {
@@ -86,7 +86,7 @@ const useUserInfo = (id: number) => {
 };
 ```
 
-커스텀 훅으로 데이터 페칭 로직을 추출함으로써 컴포넌트에서의 데이터의 흐름이 명확해졌다.
+커스텀 훅으로 데이터 페칭 로직을 추출함으로써 <mark>컴포넌트에서의 데이터의 흐름이 명확</mark>해졌다.
 
 ```tsx
 export const UserInfo = ({ id }: { id: number }) => {
@@ -105,7 +105,7 @@ export const UserInfo = ({ id }: { id: number }) => {
 };
 ```
 
-### 정리
+### 🔍 정리
 
 비즈니스 로직이 UI 로직과 분리되면서 컴포넌트가 깔끔해졌지만 몇 가지 문제점이 존재한다.
 
@@ -116,26 +116,31 @@ export const UserInfo = ({ id }: { id: number }) => {
 
 ## 📘 선언형으로 처리하기
 
-커스텀 훅으로 데이터 페칭 로직을 분리했지만, 컴포넌트에 동작 과정이 드러나면서 로직이 명령형으로 이뤄져 있다.
+커스텀 훅으로 데이터 페칭 로직을 분리했지만, 컴포넌트에 상태에 따른 분기처리가 추가되면서 로직이 <mark>명령형</mark>으로 이뤄져 있다.
 
-isLoading이 true일 때 LoadingFallback을 반환하고, error가 있을 때 ErrorFallback을 반환하고, 성공 케이스일 때 원하는 데이터를 반환한다.
+> isLoading이 true일 때 LoadingFallback을 반환하고, error가 있을 때 ErrorFallback을 반환하고, 성공 케이스일 때 원하는 데이터를 반환한다.
 
-해당 로직이 현재는 문제가 되지 않는다. 문제라고 느끼지 못할 수도 있다. 하지만 각각의 로딩 상태와 에러 상태에 따라 다르게 처리하거나, 문제가 발생했을 때 에러를 추적하기 어렵다.
-또한 컴포넌트 내에 상태에 따라 분기처리하는 로직이 있는 게 유지보수 관점에서 좋지 않다. 따라서, 선언형으로 처리하여 각각의 관심사별로 분리해보자.
+해당 로직이 현재는 문제가 되지 않는다. 문제라고 느끼지 못할 수도 있다. 하지만 비동기 호출이 여러개일 때 각각의 로딩 상태와 에러 상태에 따라 다르게 처리하거나, 문제가 발생했을 때 에러를 추적하기 어렵다.
 
-### **Suspense**
+또한 컴포넌트 내에 상태에 따라 분기처리하는 로직이 많아지면 유지보수 관점에서 좋지 않다. 따라서, <mark>선언형으로 각각의 상태를 관심사별로 분리</mark>해보자.
+
+### ✅ Suspense
 
 React 18 부터 Suspense는 React.lazy 뿐만 아니라, 모든 비동기 작업을 처리할 수 있게 되었다. (코드, 데이터, 이미지 로드 등)
 
-따라서, Suspense를 활용하면 명령형으로 처리하고 있던 비동기 로딩 상태를 선언형으로 처리할 수 있다.
+따라서, Suspense를 활용하면 명령형으로 처리하고 있던 <mark>비동기 로딩 상태를 선언형으로 처리</mark>할 수 있다.
 
-Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 상태일 때 fallback UI를 보여주고, 비동기 호출이 완료되면 자식 컴포넌트를 렌더링한다.
+_비동기 호출이 발생하는 컴포넌트를 Suspense로 감싸면, 로딩 상태일 때 fallback UI를 보여주고, 비동기 호출이 완료되면 자식 컴포넌트를 렌더링한다._
 
 공식문서의 말을 빌리면 개념적으로 catch 문과 유사하지만 오류를 잡는 대신 일시 중지된 컴포넌트를 잡는다.
 
 > Conceptually, you can think of `Suspense` as being similar to a `catch` block. However, instead of catching errors, it catches components "suspending".
 
 ## 📘 비동기 데이터 렌더링 방식
+
+비동기 데이터를 렌더링하는 방식에는 3가지가 있다.
+
+각 렌더링 방식을 코드로 구현해보고 테스트하면서 결과를 비교해보자.
 
 1. **Fetch-on-render (fetch in useEffect)**
 
@@ -145,9 +150,64 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 - 각 컴포넌트는 useEffect 에서 데이터 페칭을 트리거
 - 이 접근 방식은 종종 `waterfall` 로 이어짐
 
-<img width="500" alt="image2" src="https://github.com/user-attachments/assets/a594380a-c0f5-4b82-bba7-107ab924f99b">
+```tsx
+const TestApp = () => {
+  const [user, setUser] = useState<User>();
 
-<img width="400" alt="image2" src="https://github.com/user-attachments/assets/3fa088fb-d025-4565-813d-fa5fdf7e4b47">
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await getUser(1);
+      setUser(userData);
+    };
+
+    fetchUser();
+  }, []);
+
+  if (!user) return <div>UserInfo loading...</div>;
+
+  return (
+    <>
+      <h1>{user.name}</h1>
+      <TodoInfo />
+    </>
+  );
+};
+
+const TodoInfo = () => {
+  const [todo, setTodo] = useState<Todo>();
+
+  useEffect(() => {
+    const fetchTodo = async () => {
+      const todoData = await getTodo(2);
+      setTodo(todoData);
+    };
+
+    fetchTodo();
+  }, []);
+
+  if (!todo) {
+    return <div>TodoInfo Loading...</div>;
+  }
+
+  return (
+    <div>
+      <div>{todo.title}</div>
+    </div>
+  );
+};
+```
+
+데이터가 없을 때 로딩 UI를 보여주기 위한 분기문이 `waterfall` 을 발생시킴
+
+<img width="700" src="https://github.com/user-attachments/assets/a594380a-c0f5-4b82-bba7-107ab924f99b">
+
+<br />
+
+> 내용과 별개로 데이터가 없을 때 분기 처리를 안하고 옵셔널 체이닝을 사용하면 병렬로 실행되는 것을 확인할 수 있었다.
+>
+> 하지만 로딩 처리를 위해선 분기 처리가 필요하므로 현재 상황에서는 waterfall 이 발생한다고 보면 된다.
+
+---
 
 2. **Fetch-then-render**
 
@@ -156,9 +216,42 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 - 필요한 모든 데이터 페칭 시작 (Promise.all) → 데이터 도착 시 렌더링
 - 데이터가 도착할 때까지는 아무것도 할 수 없음
 
-<img width="500" alt="image4" src="https://github.com/user-attachments/assets/31ec1a4d-f9c4-41f3-b2ad-81269b89e93d">
+```tsx
+const fetchUserAndPost = async (userId: number, todoId: number) => {
+  const [user, todo] = await Promise.all([getUser(userId), getTodo(todoId)]);
+  return { user, todo };
+};
 
-<img width="400" alt="image4" src="https://github.com/user-attachments/assets/047f20dc-7168-48c4-9030-a45500b61843">
+const promise = ({ userId, todoId }: { userId: number; todoId: number }) =>
+  fetchUserAndPost(userId, todoId);
+
+const TestApp = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [todo, setTodo] = useState<Todo | null>(null);
+
+  useEffect(() => {
+    promise({ userId: 1, todoId: 2 }).then((data) => {
+      setUser(data.user);
+      setTodo(data.todo);
+    });
+  }, []);
+
+  if (!user) return <div>data loading...</div>;
+
+  return (
+    <>
+      <h1>{user.name}</h1>
+      <TodoInfo todo={todo} />
+    </>
+  );
+};
+```
+
+데이터는 Promise.all을 사용하여 `병렬` 로 요청함
+
+<img width="700" src="https://github.com/user-attachments/assets/31ec1a4d-f9c4-41f3-b2ad-81269b89e93d">
+
+---
 
 3. **Render-as-you-fetch (Suspense)**
 
@@ -168,25 +261,100 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 - Suspense를 사용하면 네트워크 요청을 시작한 직후에 렌더링 시작
 - 필요한 데이터가 준비되면 컴포넌트 렌더링 재시도
 
-<img width="500" alt="image6" src="https://github.com/user-attachments/assets/7da86dd8-de91-4d8e-9999-dc2c3641d0dd">
+```tsx
+const resource = fetchData();
 
-<img width="400" alt="image6" src="https://github.com/user-attachments/assets/121ce484-523f-417c-b15e-56363dce9957">
+const App = () => {
+  return (
+    <Suspense fallback={<div>Loading 1...</div>}>
+      <UserInfo />
+    </Suspense>
+  );
+};
 
-## **ErrorBoundary**
+const UserInfo = () => {
+  const user = resource.user.read();
 
-error 상황에 대한 처리를 ErrorBoundary에게 위임해보자.
+  return (
+    <>
+      <div>{user.name}</div>
+      <Suspense fallback={<div>Loading 2...</div>}>
+        <TodoInfo />
+      </Suspense>
+    </>
+  );
+};
 
-ErrorBoundary는 하위 컴포넌트 트리의 어디에서든 **깨진 컴포넌트 트리 대신 폴백 UI를 보여주는 컴포넌트**다.
+const TodoInfo = () => {
+  const todo = resource.todo.read();
+
+  return <div>{todo.title}</div>;
+};
+```
+
+```tsx
+function wrapPromise(promise: Promise<unknown>) {
+  let status = "pending";
+  let result: any;
+
+  const suspender = promise.then(
+    (res) => {
+      status = "success";
+      result = res;
+    },
+    (err) => {
+      status = "error";
+      result = err;
+    }
+  );
+
+  return {
+    read() {
+      if (status === "pending") {
+        throw suspender;
+      } else if (status === "error") {
+        throw result;
+      } else if (status === "success") {
+        return result;
+      }
+    },
+  };
+}
+
+export function fetchData() {
+  const userPromise = getUser(1);
+  const todoPromise = getTodo(2);
+
+  return {
+    user: wrapPromise(userPromise),
+    todo: wrapPromise(todoPromise),
+  };
+}
+```
+
+성능탭에서 확인해보면 user API와 todo API 호출을 병렬로 수행하는 것을 확인할 수 있다.
+
+fetch-on-render 방식을 사용하면 UserInfo 자식 컴포넌트에 TodoInfo 컴포넌트가 있을 때 waterfall이 발생한다.
+
+하지만 Render-as-you-fetch 방식을 사용하면 <mark>데이터 페칭을 먼저 시작</mark>하고, <mark>데이터를 읽을 때 프라미스 상태에 따라 로딩 폴백 또는 컴포넌트를 렌더링</mark>한다.
+
+<img width="700" src="https://github.com/user-attachments/assets/1ee161bc-b6e0-4eb1-b95d-07458d2397c2">
+
+## 📘 ErrorBoundary
+
+로딩 처리를 Suspense에 위임하였다면 이번에는 <mark>에러 처리를 ErrorBoundary에게 위임</mark>해보자.
+
+ErrorBoundary는 `하위 컴포넌트 트리의 어디에서든 깨진 컴포넌트 트리 대신 폴백 UI를 보여주는 컴포넌트` 다.
 
 렌더링 도중 생명주기 메서드 및 그 아래에 있는 전체 트리에서 에러를 잡아낸다.
 
 ---
 
-기본적으로 애플리케이션이 렌더링 도중 에러를 발생시키면 React는 화면에서 해당 UI를 제거한다.
+기본적으로 애플리케이션이 <mark>렌더링 도중 에러를 발생시키면 React는 화면에서 해당 UI를 제거</mark>한다.
 
-이를 방지하기 위해 UI의 일부를 ErrorBoundary로 감싸면, 에러가 발생한 부분 대신 fallback UI를 표시할 수 있다.
+이를 방지하기 위해 UI의 일부를 ErrorBoundary로 감싸면, <mark>에러가 발생한 부분 대신 fallback UI를 표시</mark>할 수 있다.
 
-React 공식문서에서 기본적으로 제공해주는 ErrorBoundary 클래스 컴포넌트다.
+아래는 React 공식문서에서 기본적으로 제공해주는 ErrorBoundary 클래스 컴포넌트다.
 
 이를 커스텀하려면 추가적인 공부가 필요하고, 함수형 컴포넌트로 사용하고 싶다면 `react-error-boundary` 라이브러리를 설치하여 구현할 수 있다.
 
@@ -212,7 +380,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       // 폴백 UI를 커스텀하여 렌더링할 수 있습니다.
-      return <h1>Something went wrong.</h1>;
+      return <h1>에러 폴백 UI</h1>;
     }
 
     return this.props.children;
@@ -234,17 +402,45 @@ const TestApp = () => {
 };
 ```
 
+## ✅ Suspense와 ErrorBoundary 적용
+
+이렇게 로딩 상태와 에러 상태를 Suspense와 ErrorBoundary에 위임함으로써 관심사를 분리할 수 있다.
+
+TodoInfo 컴포넌트에서 분기처리되던 상태를 외부로 위임하여 컴포넌트는 성공한 케이스의 로직만 가지고 있게 되었다.
+
+이러한 구조는 <mark>추후 요구사항이 변경되거나 다른 사람이 코드를 수정할 때 빠르게 맥락을 파악</mark>할 수 있다.
+
+```tsx
+const TestApp = () => {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingFallback />}>
+        <TodoInfo />
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
+```
+
+### ErrorBoundary가 비동기 에러를 잡지 못하는 이유
+
 React 공식문서에서는 아래와 같은 상황에서 ErrorBoundary 가 에러를 잡지 못한다고 설명한다.
 
-비동기 에러를 못잡는 이유만 간단히 생각해보자.
+서버 사이드 렌더링을 제외하면 모두 <mark>비동기 처리에서 에러가 발생하면 ErrorBoundary에서 에러를 포착하지 못한다는 내용</mark>이다.
 
-비동기 로직은 콜스택이 비워진 다음 실행되는데, 비동기 로직에서 에러가 발생한다면 ErrorBoundary 경계 내에 위치하지 않게 되므로 에러를 잡지 못하게 되는 것이다.
+비동기 에러를 못잡는 이유를 생각해보자.
 
-<img width="500" alt="new1" src="https://github.com/user-attachments/assets/9f5cb0be-041b-4229-ba3e-840ebca55b61">
+<mark>비동기 작업은 콜스택이 비워진 다음 실행</mark>되는데, 비동기 로직에서 에러가 발생한다면 <mark>ErrorBoundary 경계 내에 위치하지 않게 되므로 에러를 잡지 못하게 되는 것</mark>이다.
+
+<img width="600" alt="new1" src="https://github.com/user-attachments/assets/9f5cb0be-041b-4229-ba3e-840ebca55b61">
 
 # **어떤 에러를 처리할 수 있을까?**
 
-에러를 명령형, 선언형으로 처리하는 방법에 대해서 알아봤는데, 에러를 어떻게 처리하냐에 따라 사용자 경험에 큰 영향을 줄 수 있다. 다양한 에러 상태를 효과적으로 다루기 위해서 어떤 에러 종류들이 존재하는지 알아보자.
+앞에서 각각의 상태에 따라 선언적으로 처리하는 방법에 대해 알아보았다.
+
+이제는 역할에 맞게 관심사를 분리하여 컴포넌트 내부를 깔끔하게 유지할 수 있게 되었다.
+
+나아가 다양한 에러 상태를 효과적으로 다루기 위해서 어떤 에러 종류들이 존재하는지 알아보자.
 
 ## 📘 **예상 가능한 에러 vs 예상 불가능한 에러**
 
@@ -252,7 +448,7 @@ React 공식문서에서는 아래와 같은 상황에서 ErrorBoundary 가 에�
 
 특정 시점에 발생한 에러를 예측하고 대비할 수 있는지를 기준으로 예상 가능한 에러와 예상 불가능한 에러로 나눌 수 있다.
 
-### 예상 가능한 에러
+### ✅ 예상 가능한 에러
 
 예상 가능한 에러란 **애플리케이션** **실행 전에 개발자가 미리 예상하고 대응할 수 있는 에러**다.
 
@@ -267,17 +463,19 @@ try-catch 문 또는 ErrorBoundary로 예상 가능한 에러를 처리할 수 �
 
 401, 403 등의 HTTP status code 내에서도 에러 코드를 정의하여 다양하게 로직을 처리할 수 있다.
 
-### 프로젝트 적용 예시
+### ✅ 프로젝트 적용 예시
 
 프로젝트에서는 폼 형식으로 제출하는 영역이 적어 잘못된 페이지를 접근하는 경우에 대해 처리하였다.
 
-참여할 수 없는 방에 접근하는 경우, 좌측처럼 잘못된 링크에 접속했다는 안내 문구가 뜬다. 다시 서비스를 진행할 수 있도록 추가적인 가이드를 제공할 예정이다.
+`참여할 수 없는 방에 접근`하는 경우, 좌측처럼 잘못된 링크에 접속했다는 안내 문구가 뜬다. 다시 서비스를 진행할 수 있도록 추가적인 가이드를 제공할 예정이다.
 
-도메인만 같고 없는 페이지에 접근하는 경우, 우측처럼 페이지 이동 시 에러가 발생했다는 안내 문구와 홈화면으로 가는 가이드를 제공한다.
+`없는 페이지에 접근`하는 경우, 우측처럼 페이지 이동 시 에러가 발생했다는 안내 문구와 홈화면으로 가는 가이드를 제공한다.
 
-<img width="350" alt="new2" src="https://github.com/user-attachments/assets/77c30926-f348-47c4-b570-584eb13ee81a"> <img width="350" alt="new2-2" src="https://github.com/user-attachments/assets/25aa3ad4-490b-4ed4-ac85-34337c394682">
+|                              참여할 수 없는 방에 접근하는 경우                              |                                 없는 페이지에 접근하는 경우                                 |
+| :-----------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
+| <img src="https://github.com/user-attachments/assets/77c30926-f348-47c4-b570-584eb13ee81a"> | <img src="https://github.com/user-attachments/assets/25aa3ad4-490b-4ed4-ac85-34337c394682"> |
 
-### 예상 불가능한 에러
+### ✅ 예상 불가능한 에러
 
 개발자가 **통제할 수 없는 외부 요인이나 예측하기 힘든 상황에서 발생하는 에러**다.
 
@@ -288,27 +486,29 @@ try-catch 문 또는 ErrorBoundary로 예상 가능한 에러를 처리할 수 �
 
 같은 내용도 다른 관점에서 바라보면 예상 가능한 에러에서 예상 불가능한 에러로 나눌 수 있다.
 
-일시적인 네트워크 오류는 어느 정도 예상하여 개발 단계에서 처리할 수 있지만, 언제 어떻게 발생할 지를 예측할 수 없기 때문에 해당 기준에서는 예상 불가능한 에러로 분류하였다.
+`일시적인 네트워크 오류` 는 어느 정도 예상하여 개발 단계에서 처리할 수 있지만, <mark>언제 어떻게 발생할 지를 예측할 수 없기 때문에</mark> 해당 기준에서는 예상 불가능한 에러로 분류하였다.
 
-예상 불가능한 에러는 ErrorBoundary 를 활용해 전역 에러 핸들링을 하거나 Sentry 와 같은 모니터링 시스템을 통해 대응책을 마련할 수 있을 것이다.
+예상 불가능한 에러는 <mark>ErrorBoundary 를 활용해 에러 폴백</mark>을 제공하거나 <mark>Sentry 와 같은 모니터링 시스템</mark>을 통해 대응책을 마련할 수 있을 것이다.
 
-### 프로젝트 적용 예시
+### ✅ 프로젝트 적용 예시
 
 예상 불가능한 에러를 ErrorBoundary를 활용하여 처리하였다.
 
-런타임 에러와 API 에러를 잡는 ErrorBoundary를 각각 분리하였고, Sentry로 모니터링 시스템을 구축해 에러 단계를 구분하여 Discord로 알림이 오도록 설정하였다.
+<mark>런타임 에러와 API 에러를 잡는 ErrorBoundary를 각각 분리</mark>하였고, Sentry로 모니터링 시스템을 구축해 에러 단계를 구분하여 Discord로 알림이 오도록 설정하였다.
 
-tanstack-query의 useQueryErrorResetBoundary를 활용하면 가장 가까운 QueryErrorResetBoundary 컴포넌트 하위에 있는 모든 쿼리 오류를 재설정한다.
+tanstack-query의 `useQueryErrorResetBoundary` 를 활용하면 가장 가까운 QueryErrorResetBoundary 컴포넌트 하위에 있는 모든 쿼리 오류를 재설정한다.
 
 현재는 일부만 fallback UI를 띄우는 상황이 없어서 별도로 설정하지 않아 기본값인 전역으로 설정되었다.
 
-<img width="300" alt="new3" src="https://github.com/user-attachments/assets/7eae708f-4c93-425f-a6b2-395b93896b06"> <img width="500" alt="new3" src="https://github.com/user-attachments/assets/41ba7327-1f22-4dc1-8267-b102e2fc49bd">
+|                                            ErrorFallback UI                                             |                                           ErrorBoundary 코드                                            |
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
+| <img width="350" src="https://github.com/user-attachments/assets/7eae708f-4c93-425f-a6b2-395b93896b06"> | <img width="500" src="https://github.com/user-attachments/assets/41ba7327-1f22-4dc1-8267-b102e2fc49bd"> |
 
 ## 📘 해결 가능한 에러 vs 해결 불가능한 에러
 
 **에러 발생 후 사용자가 즉시 해결할 수 있는지**에 대한 관점으로 에러를 바라볼 수 있다.
 
-### 해결 가능한 에러
+### ✅ 해결 가능한 에러
 
 사용자가 직접 해결하거나, 해당 에러에 대한 처리 로직이 구현되어 있어 복구할 수 있는 에러다.
 
@@ -321,16 +521,19 @@ tanstack-query의 useQueryErrorResetBoundary를 활용하면 가장 가까운 Qu
 
 사용자에게 액션을 가이드하지 않더라도 문제 상황을 알려줌으로써, 해결할 수 있는 상황인지를 사용자가 판단할 수 있도록 안내한다.
 
-### 프로젝트 적용 예시
+### ✅ 프로젝트 적용 예시
 
-에러가 발생했을 때 사용자에게 알려야하는 에러라면 안내 메세지를 제공한다.
+에러가 발생했을 때 <mark>사용자에게 알려야하는 에러라면 모달로 안내 메세지를 제공</mark>한다.
 
 아래 예시는 투표 시간이 지난 후에 투표를 하여 발생한 에러를 모달로 안내하는 상황이다.
 
-tanstack-query의 mutation에서 에러 핸들링 로직을 처리하여 에러가 전파되지 않도록 구현하였다.
-<img width="300" alt="new4" src="https://github.com/user-attachments/assets/be969de7-7106-4120-8e14-79618dadb98f"> <img width="500" alt="new4" src="https://github.com/user-attachments/assets/693dddca-8a03-4b36-abfd-8a49711daaab">
+<mark>tanstack-query의 mutation에서 에러 핸들링 로직을 처리하여 에러가 전파되지 않도록 구현</mark>하였다.
 
-### 해결 불가능한 에러
+|                                사용자에게 알려야하는 에러를 모달로 제공                                 |                                      에러 핸들링 코드                                       |
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
+| <img width="650" src="https://github.com/user-attachments/assets/be969de7-7106-4120-8e14-79618dadb98f"> | <img src="https://github.com/user-attachments/assets/693dddca-8a03-4b36-abfd-8a49711daaab"> |
+
+### ✅ 해결 불가능한 에러
 
 말그대로 사용자가 해결할 수 없는 에러다.
 
@@ -344,7 +547,7 @@ tanstack-query의 mutation에서 에러 핸들링 로직을 처리하여 에러�
 
 - 비동기 호출을 하는 자식 컴포넌트가 부모 컴포넌트에게 `무언가` 를 줘야 부모 컴포넌트인 Suspense가 이를 감지할 것이다.
 - `무언가` 는 로딩 상태와 완료 상태를 모두 갖고 있어야 한다. 그래야 로딩 상태일 때 fallback UI를 렌더링하고, 완료 상태일 때 자식 컴포넌트를 렌더링할 것이다.
-- 리액트는 비동기 작업을 처리하는 객체인 `Promise` 를 활용하여 Suspense에서 비동기 호출을 감지하도록 구현하였다.
+- ➡️ 리액트는 비동기 작업을 처리하는 객체인 `Promise` <mark>를 활용하여 Suspense에서 비동기 호출을 감지하도록 구현</mark>하였다.
 
 > 핵심은 **Promise를 캐치**하고, **로딩 상태를 관리하는 컴포넌트를 구현**하는 것
 >
@@ -354,17 +557,15 @@ tanstack-query의 mutation에서 에러 핸들링 로직을 처리하여 에러�
 
 - Promise 객체는 pending, fulfilled, rejected 3가지 상태를 갖고 있기 때문에 로딩 상태에 대한 분기처리가 모두 가능하다.
 - 비동기 호출을 시작할 때 Promise를 throw하여 Suspense가 감지하도록 한다.
-- Promise가 resolve 됨 → React는 다시 컴포넌트를 렌더링 → useUserInfo는 캐시된 데이터를 반환 → children 렌더링.
+- Promise resolve → 컴포넌트 리렌더링 트리거 → useUserInfo는 캐시된 데이터를 반환 → children 렌더링
 
 ```tsx
 const useUserInfo = (id: number): UserInfo => {
   if (!cache[id]) {
     const promise = getUser(id).then((data) => {
-      console.log("resolve promise");
       cache[id] = { data };
     });
 
-    console.log("throw promise");
     cache[id] = { promise };
     throw promise;
   }
@@ -373,13 +574,10 @@ const useUserInfo = (id: number): UserInfo => {
     throw cache[id].promise;
   }
 
-  console.log("return cache data", cache[id].data!);
   return cache[id].data!;
 };
 
 const UserInfo = ({ user }: { user: User }) => {
-  console.log("UserInfo render");
-
   const user = useUserInfo(1);
 
   return (
@@ -391,27 +589,21 @@ const UserInfo = ({ user }: { user: User }) => {
 };
 ```
 
-<img width="500" alt="new5" src="https://github.com/user-attachments/assets/93078601-4dfb-40ea-b9f5-0de9e50ca819">
+<img width="600" src="https://github.com/user-attachments/assets/93078601-4dfb-40ea-b9f5-0de9e50ca819">
 
 렌더링을 시작한 후 Promise 객체를 던져 Suspense가 이를 감지하고 fallback UI를 보여준다.
 
 던진 Promise 객체가 resolve 되면 Suspense는 비동기 요청이 반환하는 데이터로 children을 렌더링한다.
 
-따라서 Promise가 pending 상태일 때 fallback UI, fulfilled 상태일 때 children을 반환하여 로딩 상태의 관심사를 분리할 수 있게 되는 것이다.
+따라서 <mark>Promise가 pending 상태일 때 fallback UI, fulfilled 상태일 때 children을 반환하여 로딩 상태의 관심사를 분리할 수 있게 되는 것</mark>이다.
 
 # 래퍼런스
 
+## 📘 래퍼런스
+
 [https://jbee.io/articles/react/효율적인 프런트엔드 에러 핸들링](https://jbee.io/articles/react/%ED%9A%A8%EC%9C%A8%EC%A0%81%EC%9D%B8%20%ED%94%84%EB%9F%B0%ED%8A%B8%EC%97%94%EB%93%9C%20%EC%97%90%EB%9F%AC%20%ED%95%B8%EB%93%A4%EB%A7%81)
 
-### suspense 내부 동작 원리
-
-https://velog.io/@shinhw371/React-suspense-throw
-
-https://maxkim-j.github.io/posts/suspense-argibraic-effect/
-
-https://velog.io/@tap_kim/react-learn-suspense
-
-### suspense 공식문서
+### Suspense 공식문서
 
 [리액트 공식문서 - suspense](https://ko.react.dev/reference/react/Suspense)
 
@@ -428,3 +620,11 @@ https://github.com/reactjs/rfcs/blob/main/text/0213-suspense-in-react-18.md
 [리액트 공식문서(legacy) - ErrorBoundary](https://ko.legacy.reactjs.org/docs/error-boundaries.html)
 
 [Use react-error-boundary to handle errors in React - Kent C. Dodds](https://kentcdodds.com/blog/use-react-error-boundary-to-handle-errors-in-react)
+
+### Suspense 내부 동작 원리 및 구현
+
+https://velog.io/@shinhw371/React-suspense-throw
+
+https://maxkim-j.github.io/posts/suspense-argibraic-effect/
+
+https://velog.io/@tap_kim/react-learn-suspense
