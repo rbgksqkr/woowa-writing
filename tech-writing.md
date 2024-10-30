@@ -1,12 +1,26 @@
-# Suspense와 ErrorBoundary 를 활용하여 선언적으로 관심사 분리하기
+# 선언형 컴포넌트로 관심사를 분리하여 컴포넌트 복잡도 개선하기
 
-# 비동기 에러 처리
+## 💭 글을 시작하며
 
-사용자가 있는 프로덕트를 개발한다면 에러 처리는 필수다. 사용자가 서비스를 이용할 때는 개발자가 의도한 시점에 의도한 동작만을 하지 않기 때문에, 다양한 케이스에 대한 에러 핸들링이 필요하다. 
+> 일주일 전에 만든 내 컴포넌트를 이해할 수 없다...
 
-> 따라서 비동기 에러를 처리하는 방법에 대해 소개하고, 선언형으로 처리하면서 상태에 대한 관심사를 분리한 경험을 소개하려고 한다.
+서비스를 개발하는 프론트엔드 개발자라면 필수적으로 비동기 처리를 해야 한다. 비동기 작업을 어떻게 처리하느냐에 따라 서비스의 완성도를 결정짓기도 한다. useState, useEffect로 로딩 상태와 에러 상태를 처리하다보면 자연스럽게 컴포넌트가 복잡해진다. 컴포넌트의 복잡도를 낮출 수 없을까?
 
-## 명령형으로 처리하기
+그래서 이 글의 예상 독자는 다음과 같다.
+
+> React를 사용해본 개발자
+>
+> 비동기 처리할 때 로딩 처리나 에러 처리를 고려해본 개발자
+>
+> 컴포넌트 내에 비즈니스 로직을 커스텀훅으로 분리해본 개발자
+>
+> 비동기 처리를 커스텀 훅으로 분리했을 때 불편함을 느낀 개발자
+
+사용자가 서비스를 이용할 때는 개발자가 의도한 시점에 의도한 동작만을 하지 않기 때문에, 다양한 케이스에 대해 고려해야 한다. 요구사항이 중간에 변경되어 다른 UI를 그려야할 수도 있다.
+
+비동기 에러를 처리하는 방법에 대해 소개하고, 선언형으로 처리하면서 상태에 대한 관심사를 분리한 경험을 소개하려고 한다.
+
+## 📘 명령형으로 처리하기
 
 에러를 명령형으로 처리하는 방법에 대해 먼저 알아보자.
 
@@ -14,20 +28,20 @@
 
 ```tsx
 const getUser = () => {
-	try {
-	  const response = await fetch(`URL`);
-	  const data = await response.json();
-	  
-	  return data;
-	  } catch(error) {
-		  console.error(error);
-		}
-}
+  try {
+    const response = await fetch(`URL`);
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
 ```
 
-위의 형태를 리액트 함수 컴포넌트에서 사용하기 어렵다. 
+위의 형태를 리액트 함수 컴포넌트에서 사용하기 어렵다.
 
-함수 컴포넌트에서 비동기 에러를 핸들링하려면 useState와 useEffect를 활용해야 한다. 
+함수 컴포넌트에서 비동기 에러를 핸들링하려면 useState와 useEffect를 활용해야 한다.
 
 따라서 API 호출부에선 사용처로 에러 처리를 위임하고, 나아가 UI로부터 로직을 분리해 커스텀 훅으로 분리한다면 아래와 같이 구현할 수 있다.
 
@@ -54,7 +68,7 @@ const useUserInfo = (id: number) => {
         }
 
         setIsLoading(false);
-        setError('');
+        setError("");
       } catch (err) {
         const error = err as Error;
         setError(error.message);
@@ -98,15 +112,15 @@ export const UserInfo = ({ id }: { id: number }) => {
 1. 커스텀 훅에서 반환하는 로딩 상태와 에러 상태에 따라 매번 컴포넌트 내에서 분기처리가 필요하다.
 2. 비동기 호출이 여러 개일 경우 이에 대한 처리가 복잡해지고, 코드를 유지보수하기 어려워진다.
 
->비슷한 에러 핸들링 코드가 수많은 컴포넌트 내에 위치하는 게 적절한가?
+> 비슷한 에러 핸들링 코드가 수많은 컴포넌트 내에 위치하는 게 적절한가?
 
-## 선언형으로 처리하기
+## 📘 선언형으로 처리하기
 
-커스텀 훅으로 데이터 페칭 로직을 분리했지만, 컴포넌트에 동작 과정이 드러나면서 로직이 명령형으로 이뤄져 있다. 
+커스텀 훅으로 데이터 페칭 로직을 분리했지만, 컴포넌트에 동작 과정이 드러나면서 로직이 명령형으로 이뤄져 있다.
 
-isLoading이 true일 때 LoadingFallback을 반환하고, error가 있을 때 ErrorFallback을 반환하고, 성공 케이스일 때 원하는 데이터를 반환한다. 
+isLoading이 true일 때 LoadingFallback을 반환하고, error가 있을 때 ErrorFallback을 반환하고, 성공 케이스일 때 원하는 데이터를 반환한다.
 
-해당 로직이 현재는 문제가 되지 않는다. 문제라고 느끼지 못할 수도 있다. 하지만 각각의 로딩 상태와 에러 상태에 따라 다르게 처리하거나, 문제가 발생했을 때 에러를 추적하기 어렵다. 
+해당 로직이 현재는 문제가 되지 않는다. 문제라고 느끼지 못할 수도 있다. 하지만 각각의 로딩 상태와 에러 상태에 따라 다르게 처리하거나, 문제가 발생했을 때 에러를 추적하기 어렵다.
 또한 컴포넌트 내에 상태에 따라 분기처리하는 로직이 있는 게 유지보수 관점에서 좋지 않다. 따라서, 선언형으로 처리하여 각각의 관심사별로 분리해보자.
 
 ### **Suspense**
@@ -119,13 +133,13 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 
 공식문서의 말을 빌리면 개념적으로 catch 문과 유사하지만 오류를 잡는 대신 일시 중지된 컴포넌트를 잡는다.
 
->Conceptually, you can think of `Suspense` as being similar to a `catch` block. However, instead of catching errors, it catches components "suspending".
+> Conceptually, you can think of `Suspense` as being similar to a `catch` block. However, instead of catching errors, it catches components "suspending".
 
-## 비동기 데이터 렌더링 방식
+## 📘 비동기 데이터 렌더링 방식
 
 1. **Fetch-on-render (fetch in useEffect)**
 
->컴포넌트를 빈 상태로 렌더링시키고 데이터를 가져오면 리렌더링하는 방식
+> 컴포넌트를 빈 상태로 렌더링시키고 데이터를 가져오면 리렌더링하는 방식
 
 - 컴포넌트 렌더링 → useEffect에서 데이터 페칭 시작 → 데이터 페칭 완료 시 리렌더링
 - 각 컴포넌트는 useEffect 에서 데이터 페칭을 트리거
@@ -135,10 +149,9 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 
 <img width="400" alt="image2" src="https://github.com/user-attachments/assets/3fa088fb-d025-4565-813d-fa5fdf7e4b47">
 
-
 2. **Fetch-then-render**
 
->필요한 데이터를 모두 가져온 다음 렌더링하는 방식
+> 필요한 데이터를 모두 가져온 다음 렌더링하는 방식
 
 - 필요한 모든 데이터 페칭 시작 (Promise.all) → 데이터 도착 시 렌더링
 - 데이터가 도착할 때까지는 아무것도 할 수 없음
@@ -147,10 +160,9 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 
 <img width="400" alt="image4" src="https://github.com/user-attachments/assets/047f20dc-7168-48c4-9030-a45500b61843">
 
-
 3. **Render-as-you-fetch (Suspense)**
 
->data fetching과 동시에 화면 렌더링을 시작하고, 데이터를 비동기적으로 받아서 데이터가 준비되는 대로 컴포넌트를 렌더링하는 방식
+> data fetching과 동시에 화면 렌더링을 시작하고, 데이터를 비동기적으로 받아서 데이터가 준비되는 대로 컴포넌트를 렌더링하는 방식
 
 - 데이터 페칭 시작 → 컴포넌트 렌더링 시작 → 데이터 도착 시 리렌더링
 - Suspense를 사용하면 네트워크 요청을 시작한 직후에 렌더링 시작
@@ -159,8 +171,6 @@ Suspense로 비동기 호출이 발생하는 컴포넌트를 감싸면 로딩 �
 <img width="500" alt="image6" src="https://github.com/user-attachments/assets/7da86dd8-de91-4d8e-9999-dc2c3641d0dd">
 
 <img width="400" alt="image6" src="https://github.com/user-attachments/assets/121ce484-523f-417c-b15e-56363dce9957">
-
-
 
 ## **ErrorBoundary**
 
@@ -216,12 +226,12 @@ ErrorBoundary를 구현하고 에러를 잡을 컴포넌트를 감싼다.
 
 ```tsx
 const TestApp = () => {
-	return (
-		<ErrorBoundary>
-			<TodoInfo />
-		</ErrorBoundary>
-  )
-}
+  return (
+    <ErrorBoundary>
+      <TodoInfo />
+    </ErrorBoundary>
+  );
+};
 ```
 
 React 공식문서에서는 아래와 같은 상황에서 ErrorBoundary 가 에러를 잡지 못한다고 설명한다.
@@ -232,12 +242,11 @@ React 공식문서에서는 아래와 같은 상황에서 ErrorBoundary 가 에�
 
 <img width="500" alt="new1" src="https://github.com/user-attachments/assets/9f5cb0be-041b-4229-ba3e-840ebca55b61">
 
-
 # **어떤 에러를 처리할 수 있을까?**
 
 에러를 명령형, 선언형으로 처리하는 방법에 대해서 알아봤는데, 에러를 어떻게 처리하냐에 따라 사용자 경험에 큰 영향을 줄 수 있다. 다양한 에러 상태를 효과적으로 다루기 위해서 어떤 에러 종류들이 존재하는지 알아보자.
 
-## **예상 가능한 에러 vs 예상 불가능한 에러**
+## 📘 **예상 가능한 에러 vs 예상 불가능한 에러**
 
 **에러가 언제 어떻게 발생할 지를 예상할 수 있는지**에 대한 관점으로 에러를 바라볼 수 있다.
 
@@ -267,14 +276,15 @@ try-catch 문 또는 ErrorBoundary로 예상 가능한 에러를 처리할 수 �
 도메인만 같고 없는 페이지에 접근하는 경우, 우측처럼 페이지 이동 시 에러가 발생했다는 안내 문구와 홈화면으로 가는 가이드를 제공한다.
 
 <img width="350" alt="new2" src="https://github.com/user-attachments/assets/77c30926-f348-47c4-b570-584eb13ee81a"> <img width="350" alt="new2-2" src="https://github.com/user-attachments/assets/25aa3ad4-490b-4ed4-ac85-34337c394682">
+
 ### 예상 불가능한 에러
 
 개발자가 **통제할 수 없는 외부 요인이나 예측하기 힘든 상황에서 발생하는 에러**다.
 
 서버 API로부터 전달받는 에러 중 500번대 에러를 예측할 수 없는 에러로 분류한다.
 
-> - **네트워크 오류 :** 네트워크가 일시적으로  중단되거나 타임아웃이 발생하는 경우
-> - **런타임 타입 오류 :**  서버 장애로 API 응답이 없거나 잘못된 형식의 데이터를 반환하는 경우
+> - **네트워크 오류 :** 네트워크가 일시적으로 중단되거나 타임아웃이 발생하는 경우
+> - **런타임 타입 오류 :** 서버 장애로 API 응답이 없거나 잘못된 형식의 데이터를 반환하는 경우
 
 같은 내용도 다른 관점에서 바라보면 예상 가능한 에러에서 예상 불가능한 에러로 나눌 수 있다.
 
@@ -294,8 +304,7 @@ tanstack-query의 useQueryErrorResetBoundary를 활용하면 가장 가까운 Qu
 
 <img width="300" alt="new3" src="https://github.com/user-attachments/assets/7eae708f-4c93-425f-a6b2-395b93896b06"> <img width="500" alt="new3" src="https://github.com/user-attachments/assets/41ba7327-1f22-4dc1-8267-b102e2fc49bd">
 
-
-## **해결 가능한 에러 vs 해결 불가능한 에러**
+## 📘 해결 가능한 에러 vs 해결 불가능한 에러
 
 **에러 발생 후 사용자가 즉시 해결할 수 있는지**에 대한 관점으로 에러를 바라볼 수 있다.
 
@@ -323,7 +332,7 @@ tanstack-query의 mutation에서 에러 핸들링 로직을 처리하여 에러�
 
 ### 해결 불가능한 에러
 
-말그대로 사용자가 해결할 수 없는 에러다. 
+말그대로 사용자가 해결할 수 없는 에러다.
 
 서비스를 정상적으로 사용할 수 없는 상태로, 사용자에게 어떤 에러 상황인지 말해줘도 도움이 되지 않는 에러다.
 
@@ -381,7 +390,6 @@ const UserInfo = ({ user }: { user: User }) => {
   );
 };
 ```
-
 
 <img width="500" alt="new5" src="https://github.com/user-attachments/assets/93078601-4dfb-40ea-b9f5-0de9e50ca819">
 
