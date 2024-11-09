@@ -165,7 +165,7 @@ const UserInfo = () => {
 
 > 이로써 비동기 호출의 로딩 처리를 Suspense에 위임하여 관심사를 분리할 수 있었다.
 
-🚨 **Suspense는 어떻게 비동기 호출을 감지하여 fallback UI를 렌더링하는가?**
+### 🚨 Suspense는 어떻게 비동기 호출을 감지하여 fallback UI를 렌더링하는가?
 
 Suspense 적용 예시에서 useEffect를 사용하면 Suspense를 적용할 수 없다고 했다.
 
