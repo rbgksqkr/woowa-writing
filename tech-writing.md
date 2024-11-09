@@ -358,7 +358,7 @@ try-catch 문 또는 ErrorBoundary로 예상 가능한 에러를 처리할 수 �
 
 401, 403 등의 HTTP status code 내에서도 에러 코드를 정의하여 다양하게 로직을 처리할 수 있다.
 
-### ✅ 프로젝트 적용 예시
+### 🔍 프로젝트 적용 예시
 
 프로젝트에서는 폼 형식으로 제출하는 영역이 적어 잘못된 페이지를 접근하는 경우에 대해 처리하였다.
 
@@ -385,7 +385,7 @@ try-catch 문 또는 ErrorBoundary로 예상 가능한 에러를 처리할 수 �
 
 예상 불가능한 에러는 <mark>ErrorBoundary 를 활용해 에러 폴백</mark>을 제공하거나 <mark>Sentry 와 같은 모니터링 시스템</mark>을 통해 대응책을 마련할 수 있을 것이다.
 
-### ✅ 프로젝트 적용 예시
+### 🔍 프로젝트 적용 예시
 
 예상 불가능한 에러를 ErrorBoundary를 활용하여 처리하였다.
 
@@ -416,7 +416,7 @@ tanstack-query의 `useQueryErrorResetBoundary` 를 활용하면 가장 가까운
 
 사용자에게 액션을 가이드하지 않더라도 문제 상황을 알려줌으로써, 해결할 수 있는 상황인지를 사용자가 판단할 수 있도록 안내한다.
 
-### ✅ 프로젝트 적용 예시
+### 🔍 프로젝트 적용 예시
 
 에러가 발생했을 때 <mark>사용자에게 알려야하는 에러라면 모달로 안내 메세지를 제공</mark>한다.
 
@@ -452,30 +452,29 @@ tanstack-query의 `useQueryErrorResetBoundary` 를 활용하면 가장 가까운
 
 ## 📘 래퍼런스
 
-[https://jbee.io/articles/react/효율적인 프런트엔드 에러 핸들링](https://jbee.io/articles/react/%ED%9A%A8%EC%9C%A8%EC%A0%81%EC%9D%B8%20%ED%94%84%EB%9F%B0%ED%8A%B8%EC%97%94%EB%93%9C%20%EC%97%90%EB%9F%AC%20%ED%95%B8%EB%93%A4%EB%A7%81)
+- [효율적인 프런트엔드 에러 핸들링](https://jbee.io/articles/react/%ED%9A%A8%EC%9C%A8%EC%A0%81%EC%9D%B8%20%ED%94%84%EB%9F%B0%ED%8A%B8%EC%97%94%EB%93%9C%20%EC%97%90%EB%9F%AC%20%ED%95%B8%EB%93%A4%EB%A7%81)
 
-### Suspense 공식문서
+---
 
-[리액트 공식문서 - suspense](https://ko.react.dev/reference/react/Suspense)
+**Suspense 공식문서**
 
-[리액트 공식문서(legacy) - suspense](https://17.reactjs.org/docs/concurrent-mode-suspense.html)
+- [리액트 공식문서 - suspense](https://ko.react.dev/reference/react/Suspense)
+- [리액트 공식문서(legacy) - suspense](https://17.reactjs.org/docs/concurrent-mode-suspense.html)
+- [리액트 공식문서 - react 18 suspense new feature](https://ko.react.dev/blog/2022/03/29/react-v18#new-suspense-features)
+- [리액트 18 릴리즈 노트 - suspense](https://github.com/reactjs/rfcs/blob/main/text/0213-suspense-in-react-18.md)
 
-[리액트 공식문서 - react 18 suspense new feature](https://ko.react.dev/blog/2022/03/29/react-v18#new-suspense-features)
+---
 
-https://github.com/reactjs/rfcs/blob/main/text/0213-suspense-in-react-18.md
+**ErrorBoundary 공식문서**
 
-### ErrorBoundary 공식문서
+- [리액트 공식문서 - error boundary로 렌더링 에러 잡기](https://ko.react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
+- [리액트 공식문서(legacy) - ErrorBoundary](https://ko.legacy.reactjs.org/docs/error-boundaries.html)
+- [Use react-error-boundary to handle errors in React - Kent C. Dodds](https://kentcdodds.com/blog/use-react-error-boundary-to-handle-errors-in-react)
 
-[리액트 공식문서 - error boundary로 렌더링 에러 잡기](https://ko.react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
+---
 
-[리액트 공식문서(legacy) - ErrorBoundary](https://ko.legacy.reactjs.org/docs/error-boundaries.html)
+**Suspense 내부 동작 원리 및 구현**
 
-[Use react-error-boundary to handle errors in React - Kent C. Dodds](https://kentcdodds.com/blog/use-react-error-boundary-to-handle-errors-in-react)
-
-### Suspense 내부 동작 원리 및 구현
-
-https://velog.io/@shinhw371/React-suspense-throw
-
-https://maxkim-j.github.io/posts/suspense-argibraic-effect/
-
-https://velog.io/@tap_kim/react-learn-suspense
+- [https://velog.io/@shinhw371/React-suspense-throw](https://velog.io/@shinhw371/React-suspense-throw)
+- [https://maxkim-j.github.io/posts/suspense-argibraic-effect/](https://maxkim-j.github.io/posts/suspense-argibraic-effect/)
+- [https://velog.io/@tap_kim/react-learn-suspense](https://velog.io/@tap_kim/react-learn-suspense)
